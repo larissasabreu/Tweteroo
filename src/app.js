@@ -141,7 +141,7 @@ app.put("/tweets/:id", async (req, res) => {
         const result = await db.collection("tweets").updateOne({ _id: new ObjectId(id) },
         {$set: tweet});
         if (result.matchedCount === 0) return res.sendStatus(404);
-		res.status(204).send("Tweet editado com sucesso!");
+	res.status(204).send("Tweet editado com sucesso!");
     } catch (err) {
         res.status(404).send(err);
        }
@@ -152,9 +152,9 @@ app.delete("/tweets/:id", async (req, res) => {
     const { id } = req.params;
   
     try {
-		const result = await db.collection("tweets").deleteOne({ _id: new ObjectId(id) });
-		if (result.deletedCount === 0) return res.sendStatus(404);
-		res.status(204).send("Tweet deletado com sucesso!");
+	const result = await db.collection("tweets").deleteOne({ _id: new ObjectId(id) });
+	if (result.deletedCount === 0) return res.sendStatus(404);
+	res.status(204).send("Tweet deletado com sucesso!");
 	} catch (err) {
 	  res.status(404).send(err);
 	}
