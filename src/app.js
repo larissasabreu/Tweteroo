@@ -46,7 +46,7 @@ app.post("/sign-up", (req, res) => {
     db.collection("users").insertOne(
         user
     ).then(res.sendStatus(201))
-    .catch(err => console.log(err.message))
+    .catch((err) => console.log(err.message))
 })
 
 
@@ -80,7 +80,7 @@ app.post("/tweets", (req, res) => {
     db.collection("tweets").insertOne(
         tweet
     ).then(res.sendStatus(201))
-      .catch(err => console.log(err.message))
+      .catch((err) => console.log(err.message))
 })
 
 
@@ -88,15 +88,42 @@ app.post("/tweets", (req, res) => {
 // get tweets
 app.get("/tweets", async (req, res) => {
 
-    try {
-    const getter = await db.collection("tweets").find().toArray()
-    
-    res.send(getter)
+   try {
+    // Junta as collections 'tweets' com a 'users' para pegar o
+    // avatar, criando um objeto com username, tweet, avatar e id
+    const getterTweets = await db.collection("tweets").aggregate([
+        {
+          $lookup: {
+            from: 'users', // collection
+            localField: 'username', 
+            foreignField: 'username', 
+            as: 'user'
+          }
+        },
+        {
+          $addFields: {
+            avatar: { $arrayElemAt: ['$user.avatar', 0] }}
+        },
+        {
+          $project: {
+            username: 1,
+            tweet: 1,
+            avatar: 1
+          }
+        }]).toArray()
+      
+      console.log(getterTweets)
 
-    } catch (err) {
-        return res.send(err)
-    }
-})
+      // manda a junção 
+      res.send(getterTweets)
+
+
+      } catch (err) {
+        res.send(err);
+      }
+    
+    })
+
 
 // edit
 app.put("/tweets/:id", async (req, res) => {
@@ -115,8 +142,8 @@ app.put("/tweets/:id", async (req, res) => {
         {$set: tweet});
         if (result.matchedCount === 0) return res.sendStatus(404);
 		res.status(204).send("Tweet editado com sucesso!");
-    } catch (error) {
-        res.status(404).send(error);
+    } catch (err) {
+        res.status(404).send(err);
        }
 }) 
 
@@ -128,8 +155,8 @@ app.delete("/tweets/:id", async (req, res) => {
 		const result = await db.collection("tweets").deleteOne({ _id: new ObjectId(id) });
 		if (result.deletedCount === 0) return res.sendStatus(404);
 		res.status(204).send("Tweet deletado com sucesso!");
-	} catch (error) {
-	  res.status(404).send(error);
+	} catch (err) {
+	  res.status(404).send(err);
 	}
   })
 
